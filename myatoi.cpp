@@ -38,6 +38,9 @@ restart:
               }
               v = (10 + tolower(a) - 'a') * (*pow);
            } else if (a != ' ') {
+              if (symEncountered) {
+                 return 0;
+              }
               if (a == '+') {
                  prod = 1;
                  symEncountered = true;
