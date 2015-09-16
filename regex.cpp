@@ -15,45 +15,54 @@ using namespace std;
 class State {
 public:
    typedef std::shared_ptr<State> ptr;
+   enum CharState {
+      INVALID = 0,
+      EXACTLY_ONCE,
+      ZERO_OR_MORE,
+      ONE_OR_MORE,
+   };
    struct Character {
       char ch;
-      int  count;
-      Character(char _ch, int _count) : ch(_ch), count(_count) { }
+      CharState state;
+      Character(char _ch, CharState _state) :
+         ch(_ch), state(_state) { }
    };
    struct Transition {
       typedef std::shared_ptr<Transition> ptr;
       std::pair<Character, int> t;
-      Transition(char ch, int count, int nextState) : t(std::make_pair(Character(ch, count), nextState)) { }
+      Transition(char ch, CharState state, int nextState) : t(std::make_pair(Character(ch, state), nextState)) { }
    };
    std::vector<Transition::ptr> transitions;
-   void addTransition(char a, int count, int nextState) {
-      Transition::ptr transition = std::make_shared<Transition>(a, count, nextState);
+   bool addTransition(char a, CharState state, int nextState) {
+      CharState tr[4][4] = {
+         {INVALID, INVALID, INVALID, INVALID},
+         {INVALID, INVALID, ONE_OR_MORE, INVALID},
+         {INVALID, ONE_OR_MORE, ZERO_OR_MORE, INVALID},
+         {INVALID, INVALID, INVALID, INVALID},
+      };
+      Transition::ptr transition = std::make_shared<Transition>(a, state, nextState);
       std::vector<Transition::ptr>::iterator it =
          transitions.begin();
-      bool insertBack = true;
       while (it != transitions.end()) {
          Transition::ptr tn = *it;
          if (tn->t.first.ch == a) {
-            assert(count != tn->t.first.count);
-            if (count == 1) {
-               insertBack = false;
-            }
-            break;
+            tn->t.first.state = tr[tn->t.first.state][state];
+            assert(tn->t.first.state != INVALID);
+            return true;
          }
          it++;
       }
-      if (insertBack) {
-         transitions.push_back(transition);
-      } else {
-         transitions.insert(transitions.begin(), transition);
-      }
+      transitions.push_back(transition);
+      return false;
    }
    int lookupNextState(char a, int &count) {
       std::vector<Transition::ptr>::const_iterator it = transitions.cbegin();
       while (it != transitions.cend()) {
          Transition::ptr tn = *it;
          if (tn->t.first.ch == a) {
-            if (count == 1 || tn->t.first.count == 0) {
+            if (count == 1 ||
+                (tn->t.first.state == ZERO_OR_MORE ||
+                 tn->t.first.state == ONE_OR_MORE)) {
                return tn->t.second;
             }
             count = 1;
@@ -68,10 +77,26 @@ public:
 };
 
 ostream &
+operator <<(ostream &s, const State::CharState ch)
+{
+   if (ch == State::INVALID) {
+      s << "(?)";
+   } else if (ch == State::ZERO_OR_MORE) {
+      s << "(*)";
+   } else if (ch == State::ONE_OR_MORE) {
+      s << "(+)";
+   } else {
+      s << " ";
+   }
+   return s;
+}
+
+
+ostream &
 operator <<(ostream &s, const State &st)
 {
    for (auto tn: st.transitions) {
-      s << " ->" << tn->t.first.ch << "(" << tn->t.first.count << ")->" <<
+      s << " ->" << tn->t.first.ch << tn->t.first.state  << "->" <<
          tn->t.second << endl;
    }
    return s;
@@ -168,11 +193,17 @@ StateMachine::compileRegex(const std::string &r)
       finalStates = (numStars == v.size());
       size_t l = v.size();
       for (unsigned int i = 0; i < l; i++) {
-         s->addTransition(v[i].ch, v[i].count, numStates + i);
+         State::CharState sch = (v[i].count == 0) ?
+            State::ZERO_OR_MORE : State::EXACTLY_ONCE;
+         if (s->addTransition(v[i].ch, sch, numStates + i)) {
+            continue;
+         }
          State::ptr next = std::make_shared<State>(finalStates);
          if (i < numStars) {
             for (unsigned int j = i + 1; j < l; j++) {
-               next->addTransition(v[j].ch, v[j].count, numStates + j);
+               State::CharState sch1 = (v[j].count == 0) ?
+                  State::ZERO_OR_MORE : State::EXACTLY_ONCE;
+               next->addTransition(v[j].ch, sch1, numStates + j);
             }
          }
          sm->states.push_back(next);
