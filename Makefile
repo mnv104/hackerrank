@@ -1,7 +1,8 @@
 SOURCES=atmost2maxsubstr.cpp balance.cpp compareBinHex.cpp isSorted.cpp maxpalindrome.cpp \
         maxsubstr.cpp median.cpp medianSortedArrays.cpp myatoi.cpp palindromindex.cpp pathIter.cpp permute.cpp replace.cpp \
         reverse.cpp reverseDigits.cpp reverseVec.cpp rle.cpp rowCol.cpp twosum.cpp vecInit.cpp regex.cpp bst.cpp \
-        searchRotateSorted.cpp moveZeroes.cpp removeDup.cpp binarytree.cpp recpermute.cpp recsubset.cpp recsubsetsum.cpp
+        searchRotateSorted.cpp moveZeroes.cpp removeDup.cpp binarytree.cpp recpermute.cpp recsubset.cpp recsubsetsum.cpp \
+        clusterSort.cpp
 
 BUILDDIR?=build
 OBJS=$(patsubst %.cpp,$(BUILDDIR)/%.o, $(SOURCES))
