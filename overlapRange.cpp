@@ -17,11 +17,19 @@ findNewRange(const std::pair<int, int> &p1,
 
 bool
 isIntersecting(const std::pair<int, int> &p1,
-               const std::pair<int, int> &p2)
+               const std::pair<int, int> &p2,
+               int &length)
 {
    if (p1.second < p2.first ||
        p2.second < p1.first) {
       return false;
+   }
+   if (p1.first <= p2.first) {
+      length = std::min(p2.second - p2.first,
+                        p1.second - p2.first);
+   } else {
+      length = std::min(p1.second - p1.first,
+                        p2.second - p1.first);
    }
    return true;
 }
@@ -39,102 +47,84 @@ isCovered(const std::pair<int, int> &p1,
    return 0;
 }
 
-struct comparator {
-   bool operator() (const std::pair<int, int> &p1, const std::pair<int, int> &p2)
+struct comparator2 {
+   bool operator() (const std::pair<std::pair<int, int>, int> &p1,
+                    const std::pair<std::pair<int, int>, int> &p2)
    {
-      if (p1.second > p2.second) {
-         return true;
+      if (p1.second == p2.second) {
+         if (p1.first.first < p2.first.first) {
+            return true;
+         }
+         return p1.first.second < p2.first.second;
       }
-      return false;
+      return p1.second > p2.second;
    }
 };
 
 
-
 std::set<std::pair<int, int>>
-findOverlapRange(const std::set<std::pair<int, int>> &sMin,
-                 const std::set<std::pair<int, int>, comparator> &sMax,
-                 const std::pair<int, int> &range)
+findOverlapRange2(const std::set<std::pair<int, int>> &sMin,
+                  const std::pair<int, int> &range)
 {
    std::set<std::pair<int, int>> s1;
-   std::pair<int, int> p1, p2;
-   int minDiff, maxDiff;
-   bool lowValid = false, hiValid = false;
+   std::set<std::pair<std::pair<int, int>, int>, comparator2> sMax;
    for (auto i: sMin) {
-      if (i.first <= range.first) {
-         if (lowValid && range.first - i.first < minDiff) {
-            minDiff = range.first - i.first;
-            p1 = i;
-         } else if (!lowValid) {
-            minDiff = range.first - i.first;
-            lowValid = true;
-            p1 = i;
-         }
-      }
-      if (i.second >= range.second) {
-         if (hiValid && i.second - range.second < maxDiff) {
-            maxDiff = i.second - range.second;
-            p2 = i;
-         } else if (!hiValid) {
-            maxDiff = i.second - range.second;
-            hiValid = true;
-            p2 = i;
-         }
+      int l;
+      if (isIntersecting(i, range, l)) {
+         //cout << "Adding " << i.first << " " << i.second << "(" << l << "),";
+         sMax.insert(make_pair(i, l));
       }
    }
-   if (p1 == p2) {
-      s1.insert(p1);
-      return s1;
-   } else {
-      int v;
-      v = isCovered(p1, range);
-      if (v == 1) {
-         s1.insert(p1);
-         return s1;
-      }
-      v = isCovered(p2, range);
-      if (v == 1) {
-         s1.insert(p2);
-         return s1;
-      }
-      if (isIntersecting(p1, p2)) {
-         s1.insert(p1);
-         s1.insert(p2);
-         return s1;
-      }
-      std::pair<int, int> newRange = findNewRange(p1, p2);
-      s1.insert(p1);
-      int newVal = p1.second;
-      for (auto i: sMin) {
-         if (i != p1) {
-            std::pair<int, int> j;
-            std::set<std::pair<int, int>, comparator>::const_iterator it = sMax.begin();
-            while (it != sMax.end()) {
-               j = *it;
-               if (j.first <= newVal) {
-                  newVal = j.second;
-                  s1.insert(j);
-                  if (newVal >= newRange.second) {
-                     return s1;
-                  }
-                  break;
-               }
-               it++;
+   std::pair<int, int> r;
+   bool valid = false;
+   bool clampLeft = false, clampRight = false;
+   for (auto i: sMax) {
+      //cout << "Getting " << i.first.first << " " << i.first.second << "(" << i.second << "),";
+      if (!valid) {
+         r = i.first;
+         valid = true;
+      } else {
+         if (isCovered(r, i.first) == 1) {
+            continue;
+         }
+         int l;
+         if (!isIntersecting(r, i.first, l)) {
+            continue;
+         }
+         if (clampLeft) {
+            if (i.first.first <= r.first) {
+               continue;
             }
          }
+         if (clampRight) {
+            if (i.second >= r.second) {
+               continue;
+            }
+         }
+         r = findNewRange(r, i.first);
       }
-      throw std::invalid_argument("Not possible");
+      s1.insert(i.first);
+      if (!clampLeft && r.first <= range.first) {
+         clampLeft = true;
+      }
+      if (!clampRight && r.second >= range.second) {
+         clampRight = true;
+      }
+      if (clampLeft && clampRight) {
+         return s1;
+      }
    }
+   throw std::invalid_argument("Not possible");
 }
 
-void displayRanges(const std::set<std::pair<int, int>> &sMin,
-                   const std::set<std::pair<int, int>, comparator> &sMax,
+
+void displayRanges2(const std::set<std::pair<int, int>> &sMin,
                    const std::pair<int, int> &p)
 {
    cout << p.first << " " << p.second << ":";
    try {
       std::set<std::pair<int, int>> s2;
-      s2 = findOverlapRange(sMin, sMax, p);
+      s2 = findOverlapRange2(sMin, p);
       for (auto i: s2) {
          cout << i.first << " " << i.second << ", ";
       }
@@ -145,11 +135,9 @@ void displayRanges(const std::set<std::pair<int, int>> &sMin,
 
 }
 
-
-int main()
+int func()
 {
    std::set<std::pair<int, int>> sMin;
-   std::set<std::pair<int, int>, comparator> sMax;
    std::array<std::pair<int, int>, 9> s1;
    s1[0] = make_pair(1,4);
    s1[1] = make_pair(30, 40);
@@ -162,23 +150,37 @@ int main()
    s1[8] = make_pair(14, 20);
    for (unsigned int i = 0; i < s1.size(); i++) {
       sMin.insert(s1[i]);
-      sMax.insert(s1[i]);
    }
-#if 0
-   for (auto i: sMin) {
-      cout << i.first << " " << i.second << endl;
-   }
-   cout << endl;
-   for (auto i: sMax) {
-      cout << i.first << " " << i.second << endl;
-   }
-   cout << endl;
-#endif
-   displayRanges(sMin, sMax, make_pair(3, 13));
-   displayRanges(sMin, sMax, make_pair(12, 17));
-   displayRanges(sMin, sMax, make_pair(1, 14));
-   displayRanges(sMin, sMax, make_pair(-4, -1));
-   displayRanges(sMin, sMax, make_pair(4, 7));
-   displayRanges(sMin, sMax, make_pair(4, 17));
+   displayRanges2(sMin, make_pair(1, 14));
+   displayRanges2(sMin, make_pair(3, 13));
+   displayRanges2(sMin, make_pair(12, 17));
+   displayRanges2(sMin, make_pair(-4, -1));
+   displayRanges2(sMin, make_pair(4, 7));
+   displayRanges2(sMin, make_pair(4, 17));
    return 0;
+}
+
+
+int func2()
+{
+   cout << "New Problem" << endl;
+   std::set<std::pair<int, int>> sMin;
+   std::array<std::pair<int, int>, 5> s1;
+   s1[0] = make_pair(1,10);
+   s1[1] = make_pair(2, 5);
+   s1[2] = make_pair(10, 13);
+   s1[3] = make_pair(7, 14);
+   s1[4] = make_pair(-5, 1);
+   for (unsigned int i = 0; i < s1.size(); i++) {
+      sMin.insert(s1[i]);
+   }
+   displayRanges2(sMin, make_pair(3, 13));
+   displayRanges2(sMin, make_pair(-3, 13));
+   return 0;
+}
+
+int main()
+{
+   func();
+   func2();
 }
