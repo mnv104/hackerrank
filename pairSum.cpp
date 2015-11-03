@@ -47,12 +47,16 @@ int main()
    std::vector<int> vA(a, a + sizeof(a)/sizeof(a[0]));
    std::vector<int> vB(b, b + sizeof(b)/sizeof(b[0]));
    std::vector<std::pair<int, int>> v1 = pairSumValue(vA, 5);
+   cout << "Following pairs sum upto target value 5: ";
    for (auto i: v1) {
-      cout << i.first << " " << i.second <<endl;
+      cout << i.first << " " << i.second << ",";
    }
+   cout << endl;
+   cout << "Following pairs sum upto target value 0: ";
    std::vector<std::pair<int, int>> v2 = pairSumZero(vB);
    for (auto i: v2) {
-      cout << i.first << " " << i.second <<endl;
+      cout << i.first << " " << i.second << ",";
    }
+   cout << endl;
    return 0;
 }
