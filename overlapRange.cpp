@@ -78,6 +78,8 @@ findOverlapRange2(const std::set<std::pair<int, int>> &sMin,
    std::pair<int, int> r;
    bool valid = false;
    bool clampLeft = false, clampRight = false;
+   int count = 0;
+repeat:
    for (auto i: sMax) {
       //cout << "Getting " << i.first.first << " " << i.first.second << "(" << i.second << "),";
       if (!valid) {
@@ -113,6 +115,10 @@ findOverlapRange2(const std::set<std::pair<int, int>> &sMin,
       if (clampLeft && clampRight) {
          return s1;
       }
+   }
+   count++;
+   if (count == 1) {
+      goto repeat;
    }
    throw std::invalid_argument("Not possible");
 }
@@ -179,8 +185,40 @@ int func2()
    return 0;
 }
 
+int func3()
+{
+   cout << "New Problem2" << endl;
+   std::set<std::pair<int, int>> sMin;
+   std::array<std::pair<int, int>, 3> s1;
+   s1[0] = make_pair(3, 8);
+   s1[1] = make_pair(9, 13);
+   s1[2] = make_pair(7, 10);
+   for (unsigned int i = 0; i < s1.size(); i++) {
+      sMin.insert(s1[i]);
+   }
+   displayRanges2(sMin, make_pair(3, 13));
+   return 0;
+}
+
+int func4()
+{
+   cout << "New Problem2" << endl;
+   std::set<std::pair<int, int>> sMin;
+   std::array<std::pair<int, int>, 3> s1;
+   s1[0] = make_pair(4, 10);
+   s1[1] = make_pair(8, 14);
+   s1[2] = make_pair(10, 16);
+   for (unsigned int i = 0; i < s1.size(); i++) {
+      sMin.insert(s1[i]);
+   }
+   displayRanges2(sMin, make_pair(5, 15));
+   return 0;
+}
+
 int main()
 {
    func();
    func2();
+   func3();
+   func4();
 }
