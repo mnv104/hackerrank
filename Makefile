@@ -3,7 +3,7 @@ SOURCES=atmost2maxsubstr.cpp balance.cpp compareBinHex.cpp isSorted.cpp maxpalin
         reverse.cpp reverseDigits.cpp reverseVec.cpp rle.cpp rowCol.cpp twosum.cpp vecInit.cpp regex.cpp bst.cpp \
         searchRotateSorted.cpp moveZeroes.cpp removeDup.cpp binarytree.cpp recpermute.cpp recsubset.cpp \
         clusterSort.cpp binarytreeencode.cpp isbst.cpp bfs.cpp pairSum.cpp overlapRange.cpp findContigTargetSum.cpp missingNumberWithXOR.cpp \
-        nqueens.cpp 3sum.cpp
+        nqueens.cpp 3sum.cpp mergeKSortedList.cpp
 
 BUILDDIR?=build
 OBJS=$(patsubst %.cpp,$(BUILDDIR)/%.o, $(SOURCES))
