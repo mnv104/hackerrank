@@ -66,7 +66,6 @@ struct BSTNode* insert(struct BSTNode* node, int key)
   }
 }
 
-
 int main(void)
 {
   struct BSTNode* root = NULL;
