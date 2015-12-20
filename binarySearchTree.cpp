@@ -337,7 +337,49 @@ public:
       display(o, "Post-Order " + s, BinarySearchTree<int>::BST_POSTORDER);
    }
 
-   void remove(T item);
+   bool lookup(const T &item) {
+      BSTNode *node = root;
+      while (node != nullptr) {
+         if (node->val == item) {
+            return true;
+         } else if (node->val < item) {
+            node = node->right;
+         } else {
+            node = node->left;
+         }
+      }
+      return false;
+   }
+
+   T getInOrderSuccessor(const T &item) {
+      BSTNode *node = root;
+      T succ;
+      bool succSet = false;
+
+      while (node != nullptr) {
+         if (node->val == item) {
+            if (node->right == nullptr) {
+               if (succSet) {
+                  return succ;
+               }
+               throw BSTException("No in-order successor");
+            }
+            BSTNode *tmp = node->right;
+            while (tmp != nullptr && tmp->left != nullptr) {
+               tmp = tmp->left;
+            }
+            return tmp->val;
+         } else if (node->val < item) {
+            node = node->right;
+         } else {
+            succSet = true;
+            succ = node->val;
+            node = node->left;
+         }
+      }
+      throw BSTException("No in-order successor");
+   }
+
 };
 
 
@@ -411,6 +453,53 @@ int func3()
 }
 
 
+int func4()
+{
+   BinarySearchTree<int> bst1;
+   int arr[] = {20, 10, 25, 18, 7, 15, 23, 21, 24};
+
+   for (unsigned int i = 0; i < sizeof(arr)/sizeof(arr[0]); i++) {
+      bst1.insert(arr[i]);
+   }
+   for (unsigned int i = 0; i < sizeof(arr)/sizeof(arr[0]); i++) {
+      if (bst1.lookup(arr[i]) == false) {
+         throw BinarySearchTree<int>::BSTException("Failed to lookup");
+      }
+   }
+   cout << "Test4 was able to do lookup successfully" << endl;
+   return 0;
+}
+
+
+int func5()
+{
+   BinarySearchTree<int> bst1;
+   int arr[] = {20, 10, 25, 18, 7, 15, 23, 21, 24};
+   int max = 25;
+
+   for (unsigned int i = 0; i < sizeof(arr)/sizeof(arr[0]); i++) {
+      bst1.insert(arr[i]);
+   }
+   for (unsigned int i = 0; i < sizeof(arr)/sizeof(arr[0]); i++) {
+      try {
+         int r = bst1.getInOrderSuccessor(arr[i]);
+         cout << "Test5: In-order successor for " << arr[i] << ": " << r << endl;
+      } catch (...) {
+         if (arr[i] == max) {
+            cout << "Test5: Expected to not find an in-order successor for " << max << endl;
+            continue;
+         }
+         cout << "Test5: In-order successor for " << arr[i] <<
+            " threw an unexpected exception!" << endl;
+         throw;
+      }
+   }
+   return 0;
+}
+
+
+
+
 int main()
 {
    func1();
@@ -422,5 +511,7 @@ int main()
    } catch (...) {
       cout << "Test3 did throw exception" << endl;
    }
+   func4();
+   func5();
    return 0;
 }
