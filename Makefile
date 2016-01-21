@@ -5,7 +5,7 @@ SOURCES=atmost2maxsubstr.cpp balance.cpp compareBinHex.cpp isSorted.cpp maxpalin
         clusterSort.cpp binarytreeencode.cpp isbst.cpp bfs.cpp pairSum.cpp overlapRange.cpp findContigTargetSum.cpp missingNumberWithXOR.cpp \
         nqueens.cpp 3sum.cpp mergeKSortedList.cpp inplacemergesortvector.cpp maxSubstringAll.cpp binarySearchTree.cpp\
         listPalindrome.cpp stringPalindrome.cpp bfstree.cpp removeDupLexOrder.cpp bitsLong.cpp rangeSum.cpp rangeSum2D.cpp subsets.cpp \
-        smartptr.cpp endian.cpp
+        smartptr.cpp endian.cpp swapNodePairs.cpp
 
 BUILDDIR?=build
 OBJS=$(patsubst %.cpp,$(BUILDDIR)/%.o, $(SOURCES))
