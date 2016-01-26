@@ -5,7 +5,7 @@ LDFLAGS=
 AR = ar
 ARFLAGS = crs
 BUILDDIR = build
-sortSources=bubbleSort.cpp insertionSort.cpp
+sortSources=bubbleSort.cpp insertionSort.cpp selectionSort.cpp mergeSort.cpp quickSort.cpp
 sortObjs=$(patsubst %.cpp, $(BUILDDIR)/%.o, $(sortSources))
 sortDepends=$(patsubst %.cpp, $(BUILDDIR)/%.d, $(sortSources))
 
